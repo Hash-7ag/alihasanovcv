@@ -1,0 +1,62 @@
+---
+import { Image } from 'astro:assets'
+import Icon from './Icon.astro'
+import portrait from '../assets/portrait.jpg'
+import { copy, profile, type Lang } from '../data/cv'
+
+interface Props { lang: Lang }
+const t = copy[Astro.props.lang]
+---
+<section class="hero" aria-labelledby="name">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="status"><span class="status-dot" aria-hidden="true"></span>{t.hero.status}</p>
+      <h1 id="name" translate="no">{t.name}<span class="accent">.</span></h1>
+      <p class="role" lang="en" translate="no">{profile.role}</p>
+      <p class="intro">{t.hero.intro}</p>
+
+      <!-- Printed CVs carry contacts in the header instead of the closing call-to-action. -->
+      <ul class="print-contacts" role="list">
+        <li>{profile.email}</li>
+        <li>{profile.phone.label}</li>
+        {profile.links.map(link => <li>{link.href.replace('https://', '').replace('www.', '')}</li>)}
+      </ul>
+
+      <div class="hero-actions">
+        <a class="button primary" href="#contact">{t.hero.contact}<Icon name="arrow-right" /></a>
+        <button class="button secondary" type="button" data-print><Icon name="download" />{t.hero.pdf}</button>
+      </div>
+
+      <ul class="social" role="list">
+        {profile.links.map(link => (
+          <li>
+            <a class="icon-button" href={link.href} target="_blank" rel="me noopener noreferrer" aria-label={link.label} title={link.label}>
+              <Icon name={link.icon} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="portrait">
+      <Image src={portrait} alt={t.a11y.portrait} widths={[240, 400]} sizes="(max-width: 760px) 112px, 320px"
+        loading="eager" fetchpriority="high" />
+    </div>
+  </div>
+
+  <div class="container">
+    <dl class="facts">
+      {t.facts.map(fact => (
+        <div class="fact">
+          <Icon name={fact.icon} size={20} />
+          <dt>{fact.label}</dt>
+          <dd>{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<script>
+  document.querySelector('[data-print]')!.addEventListener('click', () => window.print())
+</script>

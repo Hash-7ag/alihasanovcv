@@ -1,0 +1,110 @@
+---
+import '../styles/global.css'
+import { getImage } from 'astro:assets'
+import portrait from '../assets/portrait.jpg'
+import { copy, languages, pathFor, profile, skills, type Lang } from '../data/cv'
+
+interface Props { lang: Lang; path?: string; noindex?: boolean }
+const { lang, noindex = false } = Astro.props
+const path = Astro.props.path ?? pathFor(lang)
+const t = copy[lang]
+
+const site = Astro.site
+const absolute = (p: string) => (site ? new URL(p, site).href : undefined)
+const canonical = absolute(path)
+const ogLocale: Record<Lang, string> = { en: 'en_US', ru: 'ru_RU', az: 'az_AZ' }
+const ogImage = `/og/${lang}.png`
+const photo = await getImage({ src: portrait, width: 400, format: 'jpg' })
+
+// Fonts are subset by script: preload only what this language renders first.
+const fonts: Record<Lang, string[]> = {
+  en: ['latin'],
+  ru: ['latin', 'cyrillic'],
+  az: ['latin', 'latin-ext'],
+}
+
+// Structured data: lets search engines show the page as a person's profile.
+const [firstName, lastName] = copy.en.name.split(' ')
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  inLanguage: lang,
+  name: t.meta.title,
+  description: t.meta.description,
+  ...(canonical && { url: canonical }),
+  mainEntity: {
+    '@type': 'Person',
+    name: t.name,
+    alternateName: languages.filter(l => l !== lang).map(l => copy[l].name),
+    givenName: firstName,
+    familyName: lastName,
+    jobTitle: profile.role,
+    description: t.about.lead,
+    ...(site && { image: absolute(photo.src) }),
+    email: `mailto:${profile.email}`,
+    telephone: profile.phone.href.replace('tel:', ''),
+    address: { '@type': 'PostalAddress', addressLocality: 'Baku', addressCountry: 'AZ' },
+    alumniOf: { '@type': 'EducationalOrganization', name: profile.school },
+    knowsLanguage: ['az', 'ru', 'en'],
+    knowsAbout: [...skills.frontend, ...skills.state, ...skills.backend, 'UI/UX design', 'Figma'],
+    url: profile.portfolio,
+    sameAs: [profile.portfolio, ...profile.links.map(link => link.href)],
+  },
+}
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{t.meta.title}</title>
+    <meta name="description" content={t.meta.description} />
+    <meta name="author" content={t.name} />
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#161f2c" media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" type="image/svg+xml" href="/logo/hash-gold.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {fonts[lang].map(name => <link rel="preload" href={`/fonts/noto-sans-${name}.woff2`} as="font" type="font/woff2" crossorigin />)}
+
+    {canonical && !noindex && <link rel="canonical" href={canonical} />}
+    {site && !noindex && languages.map(l => <link rel="alternate" hreflang={l} href={absolute(pathFor(l))} />)}
+    {site && !noindex && <link rel="alternate" hreflang="x-default" href={absolute('/')} />}
+    {site && <link rel="sitemap" href="/sitemap-index.xml" />}
+
+    <!-- Link previews (Telegram, LinkedIn, WhatsApp, X) -->
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content={t.name} />
+    <meta property="og:title" content={t.meta.title} />
+    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:locale" content={ogLocale[lang]} />
+    {languages.filter(l => l !== lang).map(l => <meta property="og:locale:alternate" content={ogLocale[l]} />)}
+    <meta property="profile:first_name" content={t.name.split(' ')[0]} />
+    <meta property="profile:last_name" content={t.name.split(' ')[1]} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {site && <meta property="og:image" content={absolute(ogImage)} />}
+    {site && <meta property="og:image:type" content="image/png" />}
+    {site && <meta property="og:image:width" content="1200" />}
+    {site && <meta property="og:image:height" content="630" />}
+    {site && <meta property="og:image:alt" content={t.meta.title} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={t.meta.title} />
+    <meta name="twitter:description" content={t.meta.description} />
+    {site && <meta name="twitter:image" content={absolute(ogImage)} />}
+
+    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    <!-- Apply the saved theme before first paint to avoid a flash. -->
+    <script is:inline>
+      try {
+        const theme = localStorage.getItem('theme')
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

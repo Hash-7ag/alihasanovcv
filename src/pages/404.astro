@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro'
+import Icon from '../components/Icon.astro'
+import { languages, languageNames, pathFor } from '../data/cv'
+
+const messages = [
+  { lang: 'en', text: 'This page does not exist.' },
+  { lang: 'ru', text: 'Такой страницы нет.' },
+  { lang: 'az', text: 'Belə səhifə yoxdur.' },
+] as const
+---
+<Base lang="en" path="/404" noindex>
+  <main class="container not-found">
+    <img src="/logo/hash-gold.svg" width="48" height="48" alt="" />
+    <h1>404<span class="accent">.</span></h1>
+    {messages.map(m => <p lang={m.lang}>{m.text}</p>)}
+    <nav class="not-found-links" aria-label="Language">
+      {languages.map(l => (
+        <a class="button secondary" href={pathFor(l)} hreflang={l} lang={l}>{languageNames[l]}<Icon name="arrow-right" /></a>
+      ))}
+    </nav>
+  </main>
+</Base>
+
+<style>
+  .not-found { display: grid; justify-items: start; gap: 8px; min-height: 100dvh; align-content: center; }
+  .not-found h1 { margin: 16px 0 8px; }
+  .not-found p { color: var(--muted); font-size: 17px; }
+  .not-found-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+</style>

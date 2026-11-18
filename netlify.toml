@@ -1,0 +1,8 @@
+# Netlify picks the Node version from .node-version; headers live in public/_headers.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Set SITE_URL in the Netlify UI if the custom domain differs from Netlify's primary URL.
+  ASTRO_TELEMETRY_DISABLED = "1"

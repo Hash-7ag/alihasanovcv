@@ -1,0 +1,75 @@
+---
+import Icon from './Icon.astro'
+import { copy, languages, languageNames, pathFor, type Lang } from '../data/cv'
+
+interface Props { lang: Lang }
+const { lang } = Astro.props
+const t = copy[lang]
+const sections = ['about', 'skills', 'projects', 'education', 'contact'] as const
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href={pathFor(lang)} aria-label={t.a11y.home}>
+      <img src="/logo/hash-gold.svg" width="32" height="32" alt="" />
+      <span translate="no">{t.name}</span>
+    </a>
+
+    <nav class="main-nav" aria-label={t.a11y.nav}>
+      {sections.map(id => <a href={`#${id}`}>{t.nav[id]}</a>)}
+    </nav>
+
+    <div class="header-controls">
+      <nav class="lang-switch" aria-label={t.a11y.language}>
+        {languages.map(l => (
+          <a href={pathFor(l)} hreflang={l} lang={l} aria-label={languageNames[l]}
+            aria-current={l === lang ? 'page' : undefined}>{l.toUpperCase()}</a>
+        ))}
+      </nav>
+      <button class="icon-button" type="button" data-theme-toggle
+        data-label-light={t.a11y.toLight} data-label-dark={t.a11y.toDark} aria-label={t.a11y.toDark}>
+        <Icon name="moon" class="moon" />
+        <Icon name="sun" class="sun" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Theme: follow the system until the visitor picks one, then remember it.
+  const root = document.documentElement
+  const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]')!
+  const system = matchMedia('(prefers-color-scheme: dark)')
+  const current = () => root.dataset.theme ?? (system.matches ? 'dark' : 'light')
+  const sync = () => {
+    const dark = current() === 'dark'
+    button.setAttribute('aria-label', (dark ? button.dataset.labelLight : button.dataset.labelDark)!)
+    button.title = button.getAttribute('aria-label')!
+  }
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
+  button.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark'
+    const apply = () => {
+      root.dataset.theme = next
+      try { localStorage.setItem('theme', next) } catch {}
+      sync()
+    }
+    // Cross-fade the whole page, using the same fade as language switching.
+    if (document.startViewTransition && !reducedMotion.matches) document.startViewTransition(apply)
+    else apply()
+  })
+  system.addEventListener('change', sync)
+  sync()
+
+  // Highlight the section currently in view.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.main-nav a')]
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue
+      for (const link of links) {
+        if (link.hash === `#${entry.target.id}`) link.setAttribute('aria-current', 'true')
+        else link.removeAttribute('aria-current')
+      }
+    }
+  }, { rootMargin: '-45% 0px -50% 0px' })
+  links.forEach(link => observer.observe(document.querySelector(link.hash)!))
+</script>
