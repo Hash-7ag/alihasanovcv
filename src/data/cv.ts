@@ -23,8 +23,8 @@ export const profile = {
 
 export type IconName =
   | 'arrow-right' | 'arrow-up' | 'external-link' | 'download' | 'mail' | 'send' | 'phone'
-  | 'map-pin' | 'github' | 'linkedin' | 'sun' | 'moon' | 'palette' | 'layout' | 'sparkles'
-  | 'rocket' | 'graduation' | 'briefcase' | 'globe'
+  | 'map-pin' | 'github' | 'linkedin' | 'sun' | 'moon' | 'menu'
+  | 'graduation' | 'briefcase' | 'globe'
 
 export const skills = {
   frontend: ['HTML', 'CSS', 'JavaScript', 'TypeScript', 'React', 'Next.js', 'Tailwind CSS', 'SASS'],
@@ -48,11 +48,11 @@ const projectMeta = {
 type Copy = {
   name: string
   meta: { title: string; description: string }
-  a11y: { skip: string; home: string; nav: string; language: string; toLight: string; toDark: string; portrait: string }
+  a11y: { skip: string; home: string; nav: string; language: string; menu: string; toLight: string; toDark: string; portrait: string }
   nav: { about: string; skills: string; projects: string; education: string; contact: string }
-  hero: { status: string; intro: string; contact: string; pdf: string }
+  hero: { intro: string; contact: string; pdf: string }
   facts: { label: string; value: string; icon: IconName }[]
-  about: { title: string; lead: string; text: string; portfolio: string; services: { icon: IconName; title: string; text: string }[] }
+  about: { title: string; lead: string; text: string }
   skills: { title: string; groups: { title: string; items: readonly string[] }[] }
   projects: { title: string; items: { title: string; role: string; url: string; link: string; stack: readonly string[]; results: string[] }[] }
   education: { title: string; field: string; period: string }
@@ -69,12 +69,11 @@ export const copy: Record<Lang, Copy> = {
       description: 'Ali Hasanov — full-stack web developer and web designer in Baku. React, Next.js, TypeScript, UI/UX design, projects and contact details.',
     },
     a11y: {
-      skip: 'Skip to content', home: 'Ali Hasanov — home', nav: 'Sections', language: 'Language',
+      skip: 'Skip to content', home: 'Ali Hasanov — home', nav: 'Sections', language: 'Language', menu: 'Menu',
       toLight: 'Switch to light theme', toDark: 'Switch to dark theme', portrait: 'Portrait of Ali Hasanov',
     },
     nav: { about: 'About', skills: 'Skills', projects: 'Projects', education: 'Education', contact: 'Contact' },
     hero: {
-      status: 'Open to full-time and project work',
       intro: 'I take websites from UI/UX design to a working product with React, Next.js and TypeScript.',
       contact: 'Get in touch',
       pdf: 'Save as PDF',
@@ -89,13 +88,6 @@ export const copy: Record<Lang, Copy> = {
       title: 'About',
       lead: 'Full-stack web developer and web designer based in Baku.',
       text: 'I build responsive websites and web interfaces with React, Next.js and TypeScript. I combine UI/UX design in Figma with interface development, animation and deployment. I work on landing pages, personal and business websites; my wider stack also includes Node.js, Express and MongoDB.',
-      portfolio: 'View main portfolio',
-      services: [
-        { icon: 'palette', title: 'Design', text: 'UI/UX design, colour palettes, typography, logos and visual identity.' },
-        { icon: 'layout', title: 'Interfaces', text: 'Responsive layouts, localisation, light and dark themes.' },
-        { icon: 'sparkles', title: 'Motion', text: 'Animation that respects reduced-motion preferences.' },
-        { icon: 'rocket', title: 'Launch', text: 'SEO metadata, API integrations and deployment.' },
-      ],
     },
     skills: {
       title: 'Skills',
@@ -162,12 +154,11 @@ export const copy: Record<Lang, Copy> = {
       description: 'Али Гасанов — full-stack веб-разработчик и веб-дизайнер из Баку. React, Next.js, TypeScript, UI/UX-дизайн, проекты и контакты.',
     },
     a11y: {
-      skip: 'Перейти к содержимому', home: 'Али Гасанов — главная', nav: 'Разделы', language: 'Язык',
+      skip: 'Перейти к содержимому', home: 'Али Гасанов — главная', nav: 'Разделы', language: 'Язык', menu: 'Меню',
       toLight: 'Включить светлую тему', toDark: 'Включить тёмную тему', portrait: 'Портрет Али Гасанова',
     },
     nav: { about: 'Обо мне', skills: 'Навыки', projects: 'Проекты', education: 'Образование', contact: 'Контакты' },
     hero: {
-      status: 'Открыт к полной занятости и проектам',
       intro: 'Веду сайты от UI/UX-дизайна до работающего продукта на React, Next.js и TypeScript.',
       contact: 'Связаться',
       pdf: 'Сохранить в PDF',
@@ -182,13 +173,6 @@ export const copy: Record<Lang, Copy> = {
       title: 'Обо мне',
       lead: 'Full-stack веб-разработчик и веб-дизайнер из Баку.',
       text: 'Создаю адаптивные сайты и веб-интерфейсы на React, Next.js и TypeScript. Совмещаю UI/UX-дизайн в Figma с разработкой интерфейсов, анимациями и публикацией проектов. Работаю с лендингами, персональными и бизнес-сайтами; в стеке также Node.js, Express и MongoDB.',
-      portfolio: 'Основное портфолио',
-      services: [
-        { icon: 'palette', title: 'Дизайн', text: 'UI/UX-дизайн, палитра и типографика, логотипы и визуальный стиль.' },
-        { icon: 'layout', title: 'Интерфейсы', text: 'Адаптивная вёрстка, локализация, светлая и тёмная темы.' },
-        { icon: 'sparkles', title: 'Анимации', text: 'Анимации с учётом режима уменьшения движения.' },
-        { icon: 'rocket', title: 'Запуск', text: 'SEO-метаданные, интеграции API и публикация.' },
-      ],
     },
     skills: {
       title: 'Навыки',
@@ -255,12 +239,11 @@ export const copy: Record<Lang, Copy> = {
       description: 'Əli Həsənov — Bakıda full-stack veb proqramçı və veb dizayner. React, Next.js, TypeScript, UI/UX dizaynı, layihələr və əlaqə.',
     },
     a11y: {
-      skip: 'Məzmuna keç', home: 'Əli Həsənov — ana səhifə', nav: 'Bölmələr', language: 'Dil',
+      skip: 'Məzmuna keç', home: 'Əli Həsənov — ana səhifə', nav: 'Bölmələr', language: 'Dil', menu: 'Menyu',
       toLight: 'Açıq mövzunu aktiv et', toDark: 'Tünd mövzunu aktiv et', portrait: 'Əli Həsənovun portreti',
     },
     nav: { about: 'Haqqımda', skills: 'Bacarıqlar', projects: 'Layihələr', education: 'Təhsil', contact: 'Əlaqə' },
     hero: {
-      status: 'Tam ştat və layihə əsaslı işə açığam',
       intro: 'Saytları UI/UX dizaynından işlək məhsula qədər React, Next.js və TypeScript ilə hazırlayıram.',
       contact: 'Əlaqə saxla',
       pdf: 'PDF kimi saxla',
@@ -275,13 +258,6 @@ export const copy: Record<Lang, Copy> = {
       title: 'Haqqımda',
       lead: 'Bakıda fəaliyyət göstərən full-stack veb proqramçı və veb dizaynerəm.',
       text: 'React, Next.js və TypeScript ilə adaptiv saytlar və veb interfeyslər hazırlayıram. Figma-da UI/UX dizaynını interfeys proqramlaşdırması, animasiyalar və layihələrin yayımı ilə birləşdirirəm. Landing səhifələr, şəxsi və biznes saytları üzərində işləyirəm; texnologiya dəstimə Node.js, Express və MongoDB də daxildir.',
-      portfolio: 'Əsas portfolio',
-      services: [
-        { icon: 'palette', title: 'Dizayn', text: 'UI/UX dizaynı, rəng palitrası, tipoqrafika, loqo və vizual üslub.' },
-        { icon: 'layout', title: 'İnterfeyslər', text: 'Adaptiv tərtibat, lokallaşdırma, açıq və tünd mövzular.' },
-        { icon: 'sparkles', title: 'Animasiya', text: 'Azaldılmış hərəkət rejimini nəzərə alan animasiyalar.' },
-        { icon: 'rocket', title: 'Yayım', text: 'SEO metaməlumatları, API inteqrasiyaları və yayım.' },
-      ],
     },
     skills: {
       title: 'Bacarıqlar',

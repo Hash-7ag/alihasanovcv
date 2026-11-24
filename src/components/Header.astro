@@ -30,8 +30,16 @@ const sections = ['about', 'skills', 'projects', 'education', 'contact'] as cons
         <Icon name="moon" class="moon" />
         <Icon name="sun" class="sun" />
       </button>
+      <button class="icon-button menu-button" type="button" popovertarget="site-menu" aria-label={t.a11y.menu} title={t.a11y.menu}>
+        <Icon name="menu" />
+      </button>
     </div>
   </div>
+
+  <!-- Phones and tablets: the same links in a native popover (Esc and outside taps close it). -->
+  <nav id="site-menu" class="site-menu" popover aria-label={t.a11y.nav}>
+    {sections.map(id => <a href={`#${id}`}>{t.nav[id]}</a>)}
+  </nav>
 </header>
 
 <script>
@@ -61,7 +69,7 @@ const sections = ['about', 'skills', 'projects', 'education', 'contact'] as cons
   sync()
 
   // Highlight the section currently in view.
-  const links = [...document.querySelectorAll<HTMLAnchorElement>('.main-nav a')]
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.main-nav a, .site-menu a')]
   const observer = new IntersectionObserver(entries => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue
@@ -72,4 +80,10 @@ const sections = ['about', 'skills', 'projects', 'education', 'contact'] as cons
     }
   }, { rootMargin: '-45% 0px -50% 0px' })
   links.forEach(link => observer.observe(document.querySelector(link.hash)!))
+
+  // Following a link closes the menu, and so does growing past the phone/tablet layout.
+  const menu = document.querySelector<HTMLElement>('#site-menu')!
+  const closeMenu = () => { if (menu.matches(':popover-open')) menu.hidePopover() }
+  menu.addEventListener('click', event => { if ((event.target as Element).closest('a')) closeMenu() })
+  matchMedia('(min-width: 961px)').addEventListener('change', closeMenu)
 </script>

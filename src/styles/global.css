@@ -21,12 +21,13 @@
   --line: light-dark(#e2ded4, #2e3d53);
   --accent: light-dark(#86661f, #dcbb6a);
   --accent-soft: light-dark(rgb(201 163 78 / .14), rgb(220 187 106 / .12));
-  --shadow: light-dark(0 1px 2px rgb(21 30 44 / .04), 0 1px 2px rgb(0 0 0 / .2));
+  --shadow: 0 1px 2px light-dark(rgb(21 30 44 / .04), rgb(0 0 0 / .2));
 
   --radius: 16px;
   --radius-sm: 10px;
   --container: 1080px;
-  --gutter: clamp(16px, 5vw, 40px);
+  /* Never narrower than a notch or rounded corner on landscape phones */
+  --gutter: max(clamp(16px, 5vw, 40px), env(safe-area-inset-left), env(safe-area-inset-right));
   --header-h: 64px;
   --font: 'Noto Sans', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
   --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Consolas, monospace;
@@ -41,6 +42,26 @@
 :root[data-theme='light'] { color-scheme: light; }
 :root[data-theme='dark'] { color-scheme: dark; }
 
+/* Browsers without light-dark() (Safari before 17.5, e.g. iPhone 8 and X): the same palette, spelled out. */
+@supports not (color: light-dark(#fff, #000)) {
+  :root {
+    --bg: #f6f5f1; --surface: #fff; --surface-2: #efede6; --text: #2a3445; --heading: #151e2c; --muted: #5b6576;
+    --line: #e2ded4; --accent: #86661f; --accent-soft: rgb(201 163 78 / .14); --shadow: 0 1px 2px rgb(21 30 44 / .04);
+  }
+  @media screen {
+    :root[data-theme='dark'] {
+      --bg: #161f2c; --surface: #1e2a3b; --surface-2: #253348; --text: #d9d5cb; --heading: #f5f3ee; --muted: #a3aebe;
+      --line: #2e3d53; --accent: #dcbb6a; --accent-soft: rgb(220 187 106 / .12); --shadow: 0 1px 2px rgb(0 0 0 / .2);
+    }
+  }
+  @media screen and (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #161f2c; --surface: #1e2a3b; --surface-2: #253348; --text: #d9d5cb; --heading: #f5f3ee; --muted: #a3aebe;
+      --line: #2e3d53; --accent: #dcbb6a; --accent-soft: rgb(220 187 106 / .12); --shadow: 0 1px 2px rgb(0 0 0 / .2);
+    }
+  }
+}
+
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }
@@ -53,6 +74,7 @@ body {
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-wrap: break-word;
 }
 img, svg { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
@@ -103,8 +125,8 @@ main:focus { outline: none; }
 .site-header {
   position: sticky; top: 0; z-index: 50;
   background: color-mix(in srgb, var(--bg) 92%, transparent);
-  backdrop-filter: saturate(1.4) blur(14px);
   -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  backdrop-filter: saturate(1.4) blur(14px);
   border-bottom: 1px solid var(--line);
 }
 .header-inner { display: flex; align-items: center; gap: 24px; min-height: var(--header-h); }
@@ -119,10 +141,27 @@ main:focus { outline: none; }
 
 .lang-switch { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 999px; }
 .lang-switch a {
-  display: grid; place-items: center; min-width: 38px; height: 36px; padding: 0 8px;
+  position: relative; display: grid; place-items: center; min-width: 38px; height: 36px; padding: 0 8px;
   border-radius: 999px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .04em;
 }
 .lang-switch a[aria-current] { background: var(--heading); color: var(--bg); }
+
+/* Invisible padding: the pill looks 36px tall but is tapped as 44px. */
+.lang-switch a::after { content: ''; position: absolute; inset: -4px 0; }
+
+.menu-button { display: none; }
+@supports not selector(:popover-open) { .menu-button { visibility: hidden; } }
+.site-menu {
+  display: none; position: fixed; inset: calc(var(--header-h) + 8px) var(--gutter) auto auto;
+  width: min(260px, 100vw - 2 * var(--gutter)); max-height: calc(100dvh - var(--header-h) - 24px); overflow-y: auto;
+  padding: 8px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); color: var(--text); box-shadow: 0 16px 40px -12px rgb(0 0 0 / .3);
+}
+.site-menu a {
+  display: flex; align-items: center; min-height: 48px; padding: 0 16px;
+  border-radius: var(--radius-sm); color: var(--text); font-size: 16px; font-weight: 500;
+}
+.site-menu a[aria-current] { color: var(--heading); background: var(--surface-2); }
 
 .icon-button .sun { display: none; }
 :root[data-theme='dark'] .icon-button .sun { display: block; }
@@ -136,20 +175,7 @@ main:focus { outline: none; }
 .hero { padding-block: clamp(48px, 8vw, 96px) 0; }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; align-items: center; gap: clamp(32px, 6vw, 80px); }
 
-.status {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 6px 14px 6px 12px; border-radius: 999px;
-  background: var(--surface); border: 1px solid var(--line);
-  color: var(--text); font-size: 13px; font-weight: 500;
-}
-.status-dot { position: relative; width: 8px; height: 8px; border-radius: 50%; background: #3fb27f; }
-.status-dot::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; background: inherit;
-  animation: pulse 3s ease-out infinite;
-}
-@keyframes pulse { from { transform: scale(1); opacity: .5; } 60%, to { transform: scale(2.6); opacity: 0; } }
-
-h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; letter-spacing: -.04em; line-height: 1.02; }
+h1 { font-size: clamp(42px, 7vw, 72px); font-weight: 700; letter-spacing: -.04em; line-height: 1.02; }
 .role { margin-top: 14px; color: var(--heading); font-size: clamp(18px, 2.2vw, 22px); font-weight: 500; letter-spacing: -.01em; }
 .intro { margin-top: 16px; max-width: 46ch; color: var(--muted); font-size: 17px; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
@@ -196,10 +222,6 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
   display: inline-grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0;
   border-radius: 12px; background: var(--accent-soft); color: var(--accent);
 }
-
-.services { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-block: 32px 24px; }
-.service h3 { margin-top: 16px; font-size: 16px; font-weight: 650; }
-.service p { margin-top: 6px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
 
 /* Skills */
 .skill-groups { display: grid; }
@@ -259,10 +281,9 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
 .contact-actions { display: flex; flex-direction: column; gap: 12px; }
 .button.ghost { border-color: rgb(255 255 255 / .18); color: #f5f3ee; }
 .contact-card :focus-visible { outline-color: #dcbb6a; }
-.contact-address { grid-column: 1 / -1; font-style: normal; }
+.contact-address { grid-column: 1 / -1; padding-top: 24px; border-top: 1px solid rgb(255 255 255 / .1); font-style: normal; }
 .contact-list {
   display: flex; flex-wrap: wrap; gap: 10px 28px;
-  padding-top: 24px; border-top: 1px solid rgb(255 255 255 / .1);
   font-size: 14px;
 }
 .contact-list li { display: flex; align-items: center; gap: 8px; min-width: 0; }
@@ -270,7 +291,7 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
 .contact-list a { overflow-wrap: anywhere; }
 
 /* ---------- Footer ---------- */
-.site-footer { border-top: 1px solid var(--line); }
+.site-footer { border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
 .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; min-height: 72px; color: var(--muted); font-size: 13px; }
 .footer-inner a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
 
@@ -281,15 +302,15 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
    3. Every text link fades its underline in.
    4. Static content (cards, chips, facts) never reacts to the pointer.
    5. Content rises in once; theme and language changes cross-fade. */
-.button, .icon-button, .lang-switch a, .main-nav a, .brand,
+.button, .icon-button, .lang-switch a, .main-nav a, .site-menu a, .brand,
 .text-link, .contact-list a, .footer-inner a {
   transition-property: color, background-color, border-color, text-decoration-color, transform;
   transition-duration: var(--dur);
   transition-timing-function: var(--ease);
 }
-.button:active, .icon-button:active, .lang-switch a:active, .main-nav a:active { transform: translateY(1px); }
+.button:active, .icon-button:active, .lang-switch a:active, .main-nav a:active, .site-menu a:active { transform: translateY(1px); }
 .text-link, .contact-list a, .footer-inner a {
-  text-decoration: underline 1px transparent;
+  text-decoration-line: underline; text-decoration-thickness: 1px; text-decoration-color: transparent;
   text-underline-offset: 4px;
 }
 
@@ -298,7 +319,7 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
   .button.secondary:hover { border-color: var(--accent); }
   .button.ghost:hover { border-color: #dcbb6a; }
   .icon-button:hover { border-color: var(--accent); color: var(--accent); }
-  .main-nav a:hover, .lang-switch a:not([aria-current]):hover { color: var(--heading); }
+  .main-nav a:hover, .site-menu a:hover, .lang-switch a:not([aria-current]):hover { color: var(--heading); }
   .brand:hover { color: var(--accent); }
   .text-link:hover, .contact-list a:hover, .footer-inner a:hover { text-decoration-color: currentColor; }
 }
@@ -319,6 +340,15 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
   }
 }
 
+/* The menu opens and closes with the same rise. */
+.site-menu {
+  opacity: 0; transform: translateY(calc(var(--rise) * -.5));
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease),
+    display var(--dur) allow-discrete, overlay var(--dur) allow-discrete;
+}
+.site-menu:popover-open { opacity: 1; transform: none; }
+@starting-style { .site-menu:popover-open { opacity: 0; transform: translateY(calc(var(--rise) * -.5)); } }
+
 /* Theme switch and language links cross-fade instead of cutting. */
 ::view-transition-old(root), ::view-transition-new(root) {
   animation-duration: var(--dur-fade);
@@ -328,40 +358,99 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
   @view-transition { navigation: auto; }
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 960px) {
+/* ---------- Responsive ----------
+   Base styles are the desktop layout (961–1599px). Print has its own rules, hence "screen". */
+
+/* Large monitors */
+@media screen and (min-width: 1600px) {
+  :root { --container: 1280px; --header-h: 72px; }
+  body { font-size: 17px; }
+  .hero-grid { grid-template-columns: minmax(0, 1fr) 360px; }
+  .section-grid { grid-template-columns: 260px minmax(0, 1fr); }
+  .skill-group { grid-template-columns: 230px minmax(0, 1fr); }
+  .intro, .contact-text { font-size: 19px; }
+  .prose, .bullets { font-size: 18px; }
+  .main-nav a, .chip, .contact-list, .edu-period, .language p, .project-role { font-size: 15px; }
+}
+
+/* Tablets and phones: links move into the menu, sections become one column */
+@media screen and (max-width: 960px) {
   .main-nav { display: none; }
+  .menu-button { display: inline-grid; }
+  .site-menu:popover-open { display: grid; gap: 2px; }
   .header-controls { margin-left: auto; }
-  .section-grid { grid-template-columns: minmax(0, 1fr); }
-  .section-label { position: static; display: flex; align-items: baseline; gap: 14px; }
-  .section-index { margin: 0; }
+
+  .hero-grid { grid-template-columns: minmax(0, 1fr) clamp(190px, 29vw, 260px); gap: 32px; }
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fact:nth-child(3) { border-left: 0; }
   .fact:nth-child(n + 3) { border-top: 1px solid var(--line); }
+
+  .section-grid { grid-template-columns: minmax(0, 1fr); }
+  .section-label { position: static; display: flex; align-items: baseline; gap: 14px; }
+  .section-index { margin: 0; }
 }
-@media (max-width: 760px) {
-  .brand span { display: none; }
-  .hero-grid { grid-template-columns: minmax(0, 1fr); }
-  .portrait { order: -1; width: 112px; }
-  .portrait img { border-radius: 24px; }
-  h1 { margin-top: 20px; }
-  .hero-actions .button { flex: 1 1 200px; }
-  .services { grid-template-columns: minmax(0, 1fr); }
-  .service { display: grid; grid-template-columns: auto 1fr; column-gap: 16px; padding: 18px; }
-  .service .badge-icon { grid-row: span 2; }
-  .service h3 { margin-top: 0; }
-  .skill-group { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .languages { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .language { flex-direction: row; align-items: center; }
-  .meter { width: 96px; flex-shrink: 0; }
-  .skill-group h3 { padding-top: 0; }
+
+/* Contact buttons sit beside the heading only when both fit comfortably */
+@media screen and (max-width: 860px) {
   .contact-card { grid-template-columns: minmax(0, 1fr); }
-  .contact-actions .button { width: 100%; }
+  .contact-actions { flex-flow: row wrap; }
 }
-@media (max-width: 420px) {
+
+/* Phones */
+@media screen and (max-width: 640px) {
+  .brand span { display: none; }
+  .hero { padding-top: 32px; }
+  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .portrait { order: -1; width: clamp(96px, 30vw, 128px); }
+  .portrait img { border-radius: 24px; }
+  h1 { font-size: clamp(38px, 12vw, 56px); }
+  .hero-actions { margin-top: 28px; }
+  .hero-actions .button { flex: 1 1 200px; }
+  .facts { margin-top: 40px; }
+
+  .section-grid { row-gap: 20px; }
+  .skill-group { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .skill-group h3 { padding-top: 0; }
+  .languages { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .language { flex-direction: row; align-items: center; padding: 16px 18px; }
+  .meter { flex: 0 1 96px; min-width: 56px; }
+
+  .contact-actions .button { flex: 1 1 250px; }
+  .contact-address { padding-top: 16px; }
+  .contact-list { flex-direction: column; gap: 10px; }
+  .footer-inner { padding-block: 12px; }
+}
+
+/* Small phones */
+@media screen and (max-width: 480px) {
   .facts { grid-template-columns: minmax(0, 1fr); }
+  .fact { padding: 14px 18px; }
   .fact + .fact { border-left: 0; border-top: 1px solid var(--line); }
+  .card { padding: 20px 18px; }
+  .project-head .text-link { width: 100%; }
+}
+@media screen and (max-width: 359px) {
+  .header-inner, .header-controls { gap: 6px; }
+  .lang-switch a { min-width: 34px; padding: 0 4px; }
   .education { flex-direction: column; }
+  .button { padding-inline: 14px; }
+}
+
+/* Phones held sideways: little height, so the header and first screen get tighter */
+@media screen and (max-height: 480px) and (orientation: landscape) {
+  :root { --header-h: 56px; }
+  .hero { padding-top: 28px; }
+  .hero-actions { margin-top: 20px; }
+  .social { margin-top: 16px; }
+  .facts { margin-top: 32px; }
+}
+
+/* Fingers instead of a mouse: every link is at least 44px tall */
+@media screen and (pointer: coarse) {
+  .text-link, .contact-list a, .brand, .main-nav a { min-height: 44px; }
+  .main-nav a { display: inline-flex; align-items: center; }
+  .contact-list a { display: inline-flex; align-items: center; }
+  .contact-list { row-gap: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -382,7 +471,7 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
   body { font-size: 10.5pt; line-height: 1.5; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .container { width: 100%; }
-  .site-header, .skip-link, .hero-actions, .social, .status, .portrait::before,
+  .site-header, .skip-link, .hero-actions, .social, .portrait::before,
   .contact, .site-footer { display: none !important; }
   .print-contacts { display: flex !important; flex-wrap: wrap; gap: 2px 14px; margin-top: 8px; padding: 0; list-style: none; color: var(--text); font-size: 9.5pt; }
 
@@ -406,17 +495,13 @@ h1 { margin-top: 24px; font-size: clamp(42px, 7vw, 72px); font-weight: 700; lett
   .section-label h2 { font-size: 14pt; }
   .lead { font-size: 12pt; }
   .prose { margin-top: 6px; max-width: none; font-size: 10.5pt; }
-  .services { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0 0; }
-  .service { display: block; }
   .card { padding: 10px 12px; border-radius: 8px; }
-  .service h3 { margin-top: 0; font-size: 10.5pt; }
-  .service p { font-size: 9.5pt; }
   .badge-icon { display: none; }
   .text-link { font-size: 9.5pt; }
   .skill-group { grid-template-columns: 150px 1fr; padding-block: 6px; }
   .skill-group h3 { padding-top: 2px; font-size: 9.5pt; }
   .chips { gap: 4px; }
-  .chip { padding: 1px 8px; font-size: 9pt; }
+  .chip, .chips.small .chip { padding: 1px 8px; border-color: var(--line); background: none; font-size: 9pt; }
   .projects { gap: 10px; }
   .project { break-inside: avoid; }
   .projects { break-before: avoid; }

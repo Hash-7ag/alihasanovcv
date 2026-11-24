@@ -20,18 +20,6 @@ const t = copy[lang]
     <Section id="about" index="01" title={t.about.title}>
       <p class="lead">{t.about.lead}</p>
       <p class="prose">{t.about.text}</p>
-      <ul class="services" role="list">
-        {t.about.services.map(service => (
-          <li class="card service">
-            <span class="badge-icon"><Icon name={service.icon} size={20} /></span>
-            <h3>{service.title}</h3>
-            <p>{service.text}</p>
-          </li>
-        ))}
-      </ul>
-      <a class="text-link" href={profile.portfolio} target="_blank" rel="noopener noreferrer">
-        {t.about.portfolio}<Icon name="external-link" size={16} />
-      </a>
     </Section>
 
     <Section id="skills" index="02" title={t.skills.title}>

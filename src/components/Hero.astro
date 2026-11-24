@@ -10,7 +10,6 @@ const t = copy[Astro.props.lang]
 <section class="hero" aria-labelledby="name">
   <div class="container hero-grid">
     <div class="hero-copy">
-      <p class="status"><span class="status-dot" aria-hidden="true"></span>{t.hero.status}</p>
       <h1 id="name" translate="no">{t.name}<span class="accent">.</span></h1>
       <p class="role" lang="en" translate="no">{profile.role}</p>
       <p class="intro">{t.hero.intro}</p>
@@ -39,7 +38,7 @@ const t = copy[Astro.props.lang]
     </div>
 
     <div class="portrait">
-      <Image src={portrait} alt={t.a11y.portrait} widths={[240, 400]} sizes="(max-width: 760px) 112px, 320px"
+      <Image src={portrait} alt={t.a11y.portrait} widths={[240, 400]} sizes="(max-width: 640px) 128px, (max-width: 960px) 260px, 320px"
         loading="eager" fetchpriority="high" />
     </div>
   </div>
